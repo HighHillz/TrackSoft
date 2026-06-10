@@ -1,94 +1,119 @@
-# Project Tracker CLI
+# TrackSoft — CLI Project Tracker
 
-A personal, terminal-based project tracker designed for the modern developer workflow. Built with Go, Cobra, SQLite, Lipgloss, and Bubble Tea.
+A high-performance, terminal-first project and deadline tracker built in **Go** and **SQLite**, designed to streamline developer workflows. Track deadlines, manage project health, and stay organized entirely from your shell.
 
-![Version](https://img.shields.io/badge/Latest%20Version-1.0.0-blue)
-![License](https://img.shields.io/badge/license-MIT-black)
+![Latest Version](https://img.shields.io/badge/Latest%20Version-1.0.0-blue)
+![Status](https://img.shields.io/badge/Status-Inactive-yellow)
 
-## Features
 
-- **Local & Fast**: Pure Go SQLite database stored automatically in your OS user config directory.
-- **Smart Inputs**: Interactive project type selection and natural language deadline parsing (e.g., "next friday", "tomorrow").
-- **Sensory Dashboard**: Color-coded project health and status tracking. 
-- **TUI Mode**: A full-screen interactive dashboard (Bubble Tea) to browse and manage projects.
-- **Desktop Alerts**: Automatic OS-level popup notifications for overdue projects.
-- **Backup Support**: Export your database to a JSON file at any time.
+## 🌟 Features
 
-## Prerequisites
+*   **Interactive TUI Dashboard**: A gorgeous Bubble Tea & Lip Gloss dashboard showing a live list of your projects, their category, deadlines, and a custom color-coded health bar.
+*   **Natural Language Due Dates**: Powered by `go-naturaldate`, you can define deadlines using natural language like `"tomorrow"`, `"next friday"`, `"in 2 weeks"`, or `"monday afternoon"`.
+*   **ASCII Tabular Summary**: A quick-scan table printed to the terminal showing all project statistics (ID, Name, Type, Due Date, Health, Status).
+*   **Active Overdue Alerts**: Automatic desktop notifications via `beeep` if any projects are detected as overdue during listing.
+*   **JSON Backups**: Quick export of all database projects to a local JSON file for backup and portability.
+*   **Local SQLite Storage**: Fast, persistent storage utilizing a local SQLite database file in the user's config directory.
 
-- Go 1.24+ (if compiling from source).
+## 🚀 How to Run
 
-## Installation
+### Installation
 
-1. Clone or download the repository.
-2. Build the binary:
-   ```bash
-   go build -o track main.go
-   ```
-3. Move the binary to a location in your system's PATH:
-   ```bash
-   sudo mv track /usr/local/bin/
-   ```
-   *(Optional)* Add an alias in your `~/.bashrc` or `~/.zshrc`:
-   ```bash
-   alias track='/usr/local/bin/track'
-   ```
+If you have Go installed on your system, you can build the project from source:
 
-## Usage
-
-### 1. Add a Project
-Add a project interactively (you will be prompted to select a type):
 ```bash
-./track add --name "My New App"
+go build -o tracker main.go
 ```
 
-Add a project inline with natural language dates:
+Alternatively, you can use the precompiled `track` binary in the repository root:
+
 ```bash
-./track add --name "Weekend MVP" --due "this sunday" --type "Web"
-./track add --name "Fix tests" --due "tomorrow" --type "CLI"
-./track add --name "Client Proposal" --due "2026-04-15" --type "UI/UX"
+# Set execution permissions
+chmod +x track
+
+# Run track directly
+./track
 ```
 
-### 2. View Projects
-Show the standard table view. Health bars show remaining time until the deadline.
+## 📁 Data & Configuration Paths
+
+*   **SQLite Database**: `~/.config/tracker/projects.db` (automatically created on initialization)
+*   **Backup Path**: `~/.config/tracker/backup.json` (generated via the `backup` command)
+
+## 🛠 Command Reference
+
+### 1. `tracker dash`
+Launches the interactive Terminal User Interface (TUI) dashboard.
+*   **Keys**:
+    *   `q` or `Ctrl+C`: Quit the dashboard.
+    *   `d`: Interactively delete/remove the currently selected project.
+    *   `↑` / `↓` / `k` / `j`: Navigate through the project list.
+
+```bash
+./track dash
+```
+
+### 2. `tracker add`
+Adds a new project to the tracker database.
+*   **Flags**:
+    *   `-n, --name string`: Name of the project (can also be passed as an argument).
+    *   `-t, --type string`: Project type (options: `UI/UX`, `Web`, `CLI`, `GUI`, `Script`, `Core`. Defaults to `CLI`).
+    *   `-d, --due string`: Natural language due date (defaults to `"next friday"` if unspecified).
+
+If no type is specified, the application will display an interactive selection prompt using `promptui`.
+
+```bash
+# Example with inline argument and default deadline
+./track add "My Go Project"
+
+# Example specifying type and natural language due date
+./track add -n "Design Mockup" -t "UI/UX" -d "next Monday"
+```
+
+### 3. `tracker list`
+Displays a clean, styled ASCII table of all projects, showing their current health percentages and status.
+*   **Statuses**:
+    *   `NEW`: Project created within the last 24 hours.
+    *   `Pending`: Active project with time remaining.
+    *   `OVERDUE`: Project deadline has passed.
+    *   `Done`: Completed project.
+*   **Note**: If any projects are overdue, a system notification will alert you.
+
 ```bash
 ./track list
 ```
 
-### 3. Interactive Dashboard (TUI)
-Launch the full-screen terminal UI to browse your projects interactively.
-```bash
-./track dash
-```
-- Navigate with **Arrow Keys** or **j/k**.
-- Press **d** to delete the currently selected project.
-- Press **q** or **Ctrl+C** to quit.
+### 4. `tracker edit`
+Modifies an existing project's deadline.
+*   **Flags**:
+    *   `-d, --due string` (Required): New natural language due date.
 
-### 4. Edit a Project's Due Date
-You can modify the deadline of an existing project by using its ID.
 ```bash
-./track edit <ID> --due "new date"
-# Example: ./track edit 3 --due "next month"
+# Update project with ID 1 to be due next Friday
+./track edit 1 --due "next Friday"
 ```
 
-### 5. Remove a Project
-Remove a project by its ID (as seen in the `list` or `dash` view).
+### 5. `tracker rm`
+Removes a project from the tracker database by ID.
+
 ```bash
-./track rm <ID>
-# Example: ./track rm 3
+./track rm 1
 ```
 
-### 6. Backup Database
-Export your current SQLite database to a formatted JSON file located in your user config directory.
+### 6. `tracker backup`
+Exports all database records to a JSON file format.
+
 ```bash
 ./track backup
 ```
 
-## Database Location
-The SQLite database is automatically created and stored in your OS config directory:
-- Linux: `~/.config/tracker/projects.db`
-- macOS: `~/Library/Application Support/tracker/projects.db`
-- Windows: `%AppData%\tracker\projects.db`
+---
 
-## License
-MIT License. See `LICENSE` for more information.
+## ⚡ Tech Stack
+
+*   **CLI Framework**: [Cobra](https://github.com/spf13/cobra)
+*   **TUI Components**: [Bubble Tea](https://github.com/charmbracelet/bubbletea) & [Lip Gloss](https://github.com/charmbracelet/lipgloss)
+*   **Natural Language Parser**: [go-naturaldate](https://github.com/tj/go-naturaldate)
+*   **Interactive Prompts**: [Promptui](https://github.com/manifoldco/promptui)
+*   **Notification Engine**: [Beeep](https://github.com/gen2brain/beeep)
+*   **SQLite Driver**: [modernc.org/sqlite](https://modernc.org/sqlite) (pure Go SQLite driver)
